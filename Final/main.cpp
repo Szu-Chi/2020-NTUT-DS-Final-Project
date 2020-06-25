@@ -29,14 +29,16 @@ int main() {
     hashTable* hashTab = new hashTable(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
     cap >> currFrame;
     resize(currFrame, currFrame, Size(currFrame.cols / 2, currFrame.rows / 2));
-    imgBlock ref(currFrame, 0);
+    imgBlock ref(currFrame, timeSeg(0, 0));
     ref.computeKeyMat();
+
     imgBlock cur;
     double threshold = 70;
     do
     {
         if (imgBlockQueue.size() < 8) {
-            imgBlock block(currFrame, num++ / fps);
+            imgBlock block(currFrame, timeSeg(num / fps, (num+1) / fps));
+            num++;
             imgBlockQueue.push(block);
             cap >> currFrame;
             if (currFrame.empty()) {
@@ -57,7 +59,7 @@ int main() {
                 ref.cp(cur);
             }
             else {
-
+                ref += cur;
             }
         }
     } while (!currFrame.empty());

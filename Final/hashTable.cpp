@@ -12,7 +12,7 @@ hashTable::~hashTable() {
 
 uint64_t hashTable::hash(imgBlock* data) {
 	uint64_t hashVal = 0;
-	Mat keyMat = data->getKeyMat();
+	cv::Mat keyMat = data->getKeyMat();
 	int zeros = 0;
 	int ones = 0;
 	int count = this->bits;
