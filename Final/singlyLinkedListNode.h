@@ -4,11 +4,10 @@
 
 class singlyLinkedListNode {
 public:
-	imgBlock* data;
+	imgBlock data;
 	singlyLinkedListNode* next;
 	singlyLinkedListNode();
-	singlyLinkedListNode(imgBlock* data);
+	singlyLinkedListNode(imgBlock data);
 	~singlyLinkedListNode();
 };
-
 #endif // !SINGLYLINKEDLIST_NODE_H

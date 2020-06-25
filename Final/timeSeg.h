@@ -15,6 +15,8 @@ public:
     timeSeg operator+(const timeSeg &t);
     timeSeg operator=(const timeSeg &t);
     timeSeg operator+=(const timeSeg &t);
+    void print();
+    std::string getTimeSeg();
 };
 
 #endif // !TIMESEG_H

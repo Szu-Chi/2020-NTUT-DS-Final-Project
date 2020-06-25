@@ -10,11 +10,12 @@ private:
 public:
 	hashTable(int space);
 	~hashTable();
-	uint64_t hash(imgBlock* data);
-	void insert(imgBlock* data);
-	imgBlock* search(imgBlock* data);
+	uint64_t hash(imgBlock data);
+	void insert(imgBlock data);
+	imgBlock search(imgBlock data);
 	int bucketCount();
 	int bucketSize(int idx);
+	void print();
 };
 #endif // !HASHTABLE_H
 

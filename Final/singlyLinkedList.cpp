@@ -1,7 +1,6 @@
 #include"singlyLinkedList.h"
-
-bool isSimilar(imgBlock* imgB1, imgBlock* imgB2, double threshold = 70) {
-	double mse = imgBlock::computeMSE(imgB1->getKeyMat(), imgB2->getKeyMat());
+bool isSimilar(imgBlock imgB1, imgBlock imgB2, double threshold = 70) {
+	double mse = imgBlock::computeMSE(imgB1.getKeyMat(), imgB2.getKeyMat());
 	return mse < threshold;
 }
 
@@ -18,16 +17,17 @@ singlyLinkedList::~singlyLinkedList() {
 	}
 }
 
-void singlyLinkedList::pushBack(imgBlock* data) {
+void singlyLinkedList::pushBack(imgBlock data,int bucketIdx) {
 	singlyLinkedListNode* cur = this->head;
 	if (this->head == nullptr) {
 		this->head = new singlyLinkedListNode(data);
 		this->size++;
+		std::cout << bucketIdx << std::endl;
 	}
 	else {
 		while (cur != nullptr) {
 			if (isSimilar(cur->data, data)) {
-				//TO-DO
+				cur->data += data;
 				break;
 			}
 			else if (cur->next != nullptr) {
@@ -42,7 +42,7 @@ void singlyLinkedList::pushBack(imgBlock* data) {
 	}
 }
 
-imgBlock* singlyLinkedList::search(imgBlock* data) {
+imgBlock singlyLinkedList::search(imgBlock data) {
 	singlyLinkedListNode* cur = this->head;
 	while (cur != nullptr) {
 		if (isSimilar(cur->data, data)) {
@@ -50,9 +50,23 @@ imgBlock* singlyLinkedList::search(imgBlock* data) {
 		}
 		cur = cur->next;
 	}
-	return nullptr;
+	imgBlock null = imgBlock(cv::Mat(1,1,0), timeSeg(-1,-1));
+	return null;
 }
 
 int singlyLinkedList::listSize() {
 	return this->size;
+}
+
+void singlyLinkedList::print(int i) {
+	int j = 0;
+	singlyLinkedListNode* cur = this->head;
+	while (cur != nullptr) {
+		std::string bucketSlot = std::to_string(i) + "-" + std::to_string(j++);
+		cur->data.print();
+		//cv::imshow(bucketSlot, cur->data.frame);
+		
+		cur->data.save(bucketSlot);
+		cur = cur->next;
+	}
 }

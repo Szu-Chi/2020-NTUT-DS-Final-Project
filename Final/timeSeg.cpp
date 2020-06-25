@@ -9,7 +9,7 @@ timeSeg::~timeSeg(){
 }
 
 bool timeSeg::overlap(timeSeg t){
-    return ((this->timeStr > t.timeEnd) || (this->timeEnd < t.timeStr))?false:true;
+    return ((this->timeStr > t.timeEnd) || (this->timeEnd < t.timeStr)) ? false : true;
 }
 
 timeSeg timeSeg::operator+(const timeSeg &t){
@@ -33,4 +33,12 @@ timeSeg timeSeg::operator=(const timeSeg &t){
 timeSeg timeSeg::operator+=(const timeSeg &t){
     *this = *this + t;
     return *this;
+}
+
+void timeSeg::print() {
+    std::cout << "[ " << this->timeStr << " , " << this->timeEnd << " ]" << std::endl;
+}
+
+std::string timeSeg::getTimeSeg() {
+    return "[ " + std::to_string(this->timeStr) + " , " + std::to_string(this->timeEnd) + " ]";
 }
