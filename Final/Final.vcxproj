@@ -149,7 +149,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="hashTable.cpp" />
+    <ClCompile Include="imgBlock.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="singlyLinkedList.cpp" />
+    <ClCompile Include="singlyLinkedListNode.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="singlyLinkedListNode.h" />
+    <ClInclude Include="hashTable.h" />
+    <ClInclude Include="imgBlock.h" />
+    <ClInclude Include="singlyLinkedList.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

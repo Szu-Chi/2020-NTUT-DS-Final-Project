@@ -6,80 +6,15 @@
 #include <opencv2/opencv_modules.hpp>
 #include <opencv2/xfeatures2d.hpp>
 #include<queue>
-
+#include"imgBlock.h"
+#include"hashTable.h"
 using namespace cv;
 using namespace std;
 
-class imgBlock {
-private:
-    double time;
-    
-public:
-    imgBlock(Mat frame, double time);
-    imgBlock();
-    ~imgBlock();
-    Mat frame;
-    Mat key;
-    void save();
-    void cp(imgBlock block);
-    void computeKeyMat();
-};
-
-imgBlock::imgBlock() {
-}
-
-imgBlock::imgBlock(Mat frame, double time) {
-    frame.copyTo(this->frame);
-    this->time = time;
-}
-
-imgBlock::~imgBlock() {
-
-}
-
-void imgBlock::save() {
-    string frameFileName = to_string(time) + ".jpg";
-    imwrite("seg/" + frameFileName, frame);
-}
-
-void imgBlock::cp(imgBlock block) {
-    block.frame.copyTo(this->frame);
-    this->time = block.time;
-    this->key = block.key;
-}
-
-void imgBlock::computeKeyMat() {
-    cvtColor(this->frame, this->key, CV_RGB2GRAY, CV_8UC1);
-    GaussianBlur(this->key, this->key, Size(9, 9), 10, 10);
-    resize(this->key, this->key, Size(8, 8));
-    Canny(this->key, this->key, 10, 50);
-    threshold(this->key, this->key, 0, 255, THRESH_OTSU);
-    Mat show;
-    key.copyTo(show);
-}
-
-void PRINT(Mat iamge) {
-    for (int i = 0; i < iamge.size().width; i++) {
-        for (int j = 0; j < iamge.size().height; j++) {
-            uchar* pixel = iamge.ptr<uchar>(i, j);
-            std::cout << int(*pixel) << " ";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n";
-}
-
-double computeMSE(Mat image1, Mat image2) {
-    Mat difference;
-    absdiff(image1, image2, difference);
-    difference = difference.mul(difference);
-    Scalar s = sum(difference);
-    double sse = s.val[0];
-    return sse / double(image1.total());
-}
-
 int main() {
+    //string videoFileName = "Alike.mp4";
     string videoFileName = "DSclass.mp4";
+
     VideoCapture cap(videoFileName);
     if (!cap.isOpened()) {
         cout << "Error can't open " << videoFileName<< endl; 
@@ -88,9 +23,10 @@ int main() {
     namedWindow("Video", 1);
     Mat currFrame;
     double fps = cap.get(CV_CAP_PROP_FPS);
-
+    double nFrame = cap.get(CV_CAP_PROP_FRAME_COUNT);
     int num = 0;
     queue<imgBlock> imgBlockQueue;
+    hashTable* hashTab = new hashTable(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
     cap >> currFrame;
     resize(currFrame, currFrame, Size(currFrame.cols / 2, currFrame.rows / 2));
     imgBlock ref(currFrame, 0);
@@ -103,7 +39,7 @@ int main() {
             imgBlock block(currFrame, num++ / fps);
             imgBlockQueue.push(block);
             cap >> currFrame;
-            if (!currFrame.empty()) {
+            if (currFrame.empty()) {
                 break;
             }
             resize(currFrame, currFrame, Size(currFrame.cols / 2, currFrame.rows / 2));
@@ -113,9 +49,15 @@ int main() {
             cur.cp(imgBlockQueue.front());
             imgBlockQueue.pop();
             cur.computeKeyMat();
-            double mse = computeMSE(ref.key, cur.key);
+            double mse = imgBlock::computeMSE(ref.getKeyMat(), cur.getKeyMat());
             if (mse > threshold) {
+                Mat difference;
+                absdiff(ref.getKeyMat(), cur.getKeyMat(), difference);
+                difference = difference.mul(difference);
                 ref.cp(cur);
+            }
+            else {
+
             }
         }
     } while (!currFrame.empty());
