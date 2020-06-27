@@ -24,5 +24,6 @@ public:
     imgBlock operator+(const imgBlock &block);
     imgBlock operator=(const imgBlock &block);
     imgBlock operator+=(const imgBlock &block);
+    bool operator==(const imgBlock& block);
 };
 #endif // !IMGBLOCK_H

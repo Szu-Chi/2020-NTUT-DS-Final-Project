@@ -35,6 +35,11 @@ timeSeg timeSeg::operator+=(const timeSeg &t){
     return *this;
 }
 
+bool timeSeg::operator==(const timeSeg& t) {
+    timeSeg self = *this;
+    return self.timeStr == t.timeStr && self.timeEnd == t.timeEnd;
+}
+
 void timeSeg::print() {
     int hour;
     int min;

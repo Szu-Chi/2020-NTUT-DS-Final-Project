@@ -14,6 +14,7 @@ public:
     timeSeg operator+(const timeSeg &t);
     timeSeg operator=(const timeSeg &t);
     timeSeg operator+=(const timeSeg &t);
+    bool operator==(const timeSeg& t);
     void print();
     std::string getTimeSeg();
     friend void Merge(std::vector<timeSeg>& Array, int front, int mid, int end);

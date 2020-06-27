@@ -60,43 +60,59 @@ void frameProc(queue<imgBlock>& imgBlockQueue, hashTable& hashTab) {
 int main(int argc, char* argv[]) {
 	//User
 	string videoFileName = "DSclass_1";
-	Mat img = imread("catchFrame/502-0.bmp");
-	imgBlock imgB(img, timeSeg(-1, -1));
-	imgB.computeKeyMat();
-	//
-	string videoExtension = "mp4";
-	fstream file;
-	file.open("./videoHash/" + videoFileName + ".hf", ios::in);
-	if (file) {
-		hashTable hashTab(file);
-		imgBlock res = hashTab.search(imgB);
-		cout << "[Search Result]" << endl;
-		res.printTime();
+	Mat img= imread("./inputImg/357-0.bmp");
+	if (img.empty()) {
+		cout << "Input image isn't existing. Please check it." << endl;
 	}
 	else {
-		std::cout << "Hash table of the video isn't existing." << std::endl;
-		VideoCapture cap(videoFileName + "." + videoExtension);
-		if (!cap.isOpened()) {
-			cout << "[Error] There are no video file name called " << videoFileName << endl;
-		}
-		else {
-			std::cout << "Hash table constructing.." << std::endl;
-			queue<imgBlock> imgBlockQueue;
-			double nFrame = cap.get(CV_CAP_PROP_FRAME_COUNT);
-			hashTable hashTab(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
-			thread reader{ readFrame, ref(imgBlockQueue), ref(cap) };
-			vector<thread> frameProcThreads;
-			for (int i = 0; i < 5; i++) {
-				frameProcThreads.push_back(thread{ frameProc, ref(imgBlockQueue), ref(hashTab) });
-			}
-			reader.join();
-			for (int i = 0; i < frameProcThreads.size(); i++) {
-				frameProcThreads[i].join();
-			}
-			hashTab.save(videoFileName);
+		imgBlock imgB(img, timeSeg(-1, -1));
+		imgB.computeKeyMat();
+		string videoExtension = "mp4";
+		fstream file;
+		file.open("./videoHash/" + videoFileName + ".hf", ios::in);
+		if (file) {
+			hashTable hashTab(file);
+			imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
 			imgBlock res = hashTab.search(imgB);
 			cout << "[Search Result]" << endl;
-			res.printTime();
+			if (res == null) {
+				cout << "Fail! Based on the input image, it's unable to find the corresponding time segment." << endl;
+			}
+			else {
+				res.printTime();
+			}
+		}
+		else {
+			std::cout << "Hash table of the video isn't existing." << std::endl;
+			VideoCapture cap(videoFileName + "." + videoExtension);
+			if (!cap.isOpened()) {
+				cout << "[Error] There are no video file name called " << videoFileName << "." << endl;
+			}
+			else {
+				std::cout << "Hash table constructing.." << std::endl;
+				queue<imgBlock> imgBlockQueue;
+				double nFrame = cap.get(CV_CAP_PROP_FRAME_COUNT);
+				hashTable hashTab(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
+				thread reader{ readFrame, ref(imgBlockQueue), ref(cap) };
+				vector<thread> frameProcThreads;
+				for (int i = 0; i < 5; i++) {
+					frameProcThreads.push_back(thread{ frameProc, ref(imgBlockQueue), ref(hashTab) });
+				}
+				reader.join();
+				for (int i = 0; i < frameProcThreads.size(); i++) {
+					frameProcThreads[i].join();
+				}
+				hashTab.save(videoFileName);
+				imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+				imgBlock res = hashTab.search(imgB);
+				cout << "[Search Result]" << endl;
+				if (res == null) {
+					cout << "Fail! Based on the input image, it's unable to find the corresponding time segment." << endl;
+				}
+				else {
+					res.printTime();
+				}
+			}
 		}
 	}
 	system("pause");

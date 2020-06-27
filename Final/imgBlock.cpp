@@ -18,16 +18,14 @@ imgBlock::~imgBlock() {
 }
 
 void imgBlock::computeKeyMat() {
-    cv::cvtColor(this->frame, this->keyMat, CV_RGB2GRAY, CV_8UC1);      //RGB -> Gray
-    cv::resize(this->keyMat, this->keyMat, cv::Size(300, 300));                 //Resize
+    cv::cvtColor(this->frame, this->keyMat, CV_RGB2GRAY, CV_8UC1);          //RGB -> Gray
+    cv::resize(this->keyMat, this->keyMat, cv::Size(250, 250));             //Resize
     cv::Mat cannyFrame;
-    cv::GaussianBlur(this->keyMat, this->keyMat, cv::Size(9, 9), 10, 10);   //Gaussin filter
-    cv::equalizeHist(this->keyMat, this->keyMat);
-    cv::Canny(this->keyMat, cannyFrame, 10, 50);                      //Edge detection
-    cv::addWeighted(this->keyMat,0.7, cannyFrame,0.3, 0,this->keyMat);
-    cv::GaussianBlur(this->keyMat, this->keyMat, cv::Size(3, 3), 5, 5);   //Gaussin filter
+    cv::Canny(this->keyMat, cannyFrame, 10, 50);                            //Edge detection
+    cv::addWeighted(this->keyMat, 0.7, cannyFrame, 0.3, 0, this->keyMat);
+    cv::GaussianBlur(this->keyMat, this->keyMat, cv::Size(3, 3), 5, 5);     //Gaussin filter
     keyMat.copyTo(bfThersholdFrame);
-    cv::resize(this->keyMat, this->keyMat, cv::Size(50, 50));                 //Resize
+    cv::resize(this->keyMat, this->keyMat, cv::Size(50, 50));               //Resize
     cv::threshold(this->keyMat, this->keyMat, 0, 255, cv::THRESH_OTSU);     //Binarization, OTSU algo.
 }
 
@@ -68,6 +66,11 @@ imgBlock imgBlock::operator=(const imgBlock &block){
 imgBlock imgBlock::operator+=(const imgBlock &block){
     *this = *this + block;
     return *this;
+}
+
+bool imgBlock::operator==(const imgBlock& block) {
+    imgBlock self = *this;
+    return self.time[0] == block.time[0];
 }
 
 double imgBlock::computeMSE(cv::Mat image1, cv::Mat image2) {
