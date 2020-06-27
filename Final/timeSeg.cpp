@@ -9,7 +9,7 @@ timeSeg::~timeSeg(){
 }
 
 bool timeSeg::overlap(timeSeg t){
-    return ((this->timeStr > t.timeEnd) || (this->timeEnd < t.timeStr)) ? false : true;
+    return ((this->timeStr > t.timeEnd + 5) || (this->timeEnd < t.timeStr - 5)) ? false : true;
 }
 
 timeSeg timeSeg::operator+(const timeSeg &t){
@@ -36,9 +36,26 @@ timeSeg timeSeg::operator+=(const timeSeg &t){
 }
 
 void timeSeg::print() {
-    std::cout << "[ " << this->timeStr << " , " << this->timeEnd << " ]" << std::endl;
+    int hour;
+    int min;
+    int sec;
+    int milliSec;
+    std::string start, end;
+    hour = this->timeStr / 3600;
+    min = this->timeStr / 60;
+    sec = this->timeStr - hour * 3600 - min * 60;
+    milliSec = std::ceil((this->timeStr - std::floor(this->timeStr)) * 1000);
+    start = std::to_string(hour) + ":" + std::to_string(min) + ":" + std::to_string(sec);// +":" + std::to_string(milliSec);
+    
+    hour = this->timeEnd / 3600;
+    min = this->timeEnd / 60;
+    sec = this->timeEnd - hour * 3600 - min * 60;
+    milliSec = std::ceil((this->timeEnd - std::floor(this->timeEnd)) * 1000);
+    end = std::to_string(hour) + ":" + std::to_string(min) + ":" + std::to_string(sec);// +":" + std::to_string(milliSec);
+    std::cout << "[" + start + " ~ " + end + "]" << std::endl;
 }
 
 std::string timeSeg::getTimeSeg() {
-    return "[ " + std::to_string(this->timeStr) + " , " + std::to_string(this->timeEnd) + " ]";
+    return std::to_string(this->timeStr) + "-" + std::to_string(this->timeEnd);
 }
+

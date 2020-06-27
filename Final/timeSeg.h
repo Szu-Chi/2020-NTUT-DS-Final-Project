@@ -2,7 +2,6 @@
 #define TIMESEG_H
 #include <opencv2/core.hpp>
 #include <opencv2/opencv.hpp>
-
 class timeSeg{
 private:
     double timeStr;
@@ -17,6 +16,6 @@ public:
     timeSeg operator+=(const timeSeg &t);
     void print();
     std::string getTimeSeg();
+    friend void Merge(std::vector<timeSeg>& Array, int front, int mid, int end);
 };
-
 #endif // !TIMESEG_H

@@ -1,4 +1,9 @@
 .vs
 Final/seg/*
 Final/x64/*
+Final/catchFrame/*
+Final/catchKeyMat/*
+Final/timeSeg/*
 *.mp4
+Final/video/*
+Final/videoHash/*

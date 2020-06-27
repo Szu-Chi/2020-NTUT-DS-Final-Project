@@ -17,12 +17,11 @@ singlyLinkedList::~singlyLinkedList() {
 	}
 }
 
-void singlyLinkedList::pushBack(imgBlock data,int bucketIdx) {
+void singlyLinkedList::pushBack(imgBlock data) {
 	singlyLinkedListNode* cur = this->head;
 	if (this->head == nullptr) {
 		this->head = new singlyLinkedListNode(data);
 		this->size++;
-		std::cout << bucketIdx << std::endl;
 	}
 	else {
 		while (cur != nullptr) {
@@ -46,7 +45,7 @@ imgBlock singlyLinkedList::search(imgBlock data) {
 	singlyLinkedListNode* cur = this->head;
 	while (cur != nullptr) {
 		if (isSimilar(cur->data, data)) {
-			return data;
+			return cur->data;
 		}
 		cur = cur->next;
 	}
@@ -58,15 +57,13 @@ int singlyLinkedList::listSize() {
 	return this->size;
 }
 
-void singlyLinkedList::print(int i) {
+void singlyLinkedList::save(int i, std::fstream& file) {
 	int j = 0;
 	singlyLinkedListNode* cur = this->head;
 	while (cur != nullptr) {
+		file << '?';
 		std::string bucketSlot = std::to_string(i) + "-" + std::to_string(j++);
-		cur->data.print();
-		//cv::imshow(bucketSlot, cur->data.frame);
-		
-		cur->data.save(bucketSlot);
+		cur->data.save(bucketSlot, file);
 		cur = cur->next;
 	}
 }
