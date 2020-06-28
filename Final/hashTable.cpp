@@ -100,7 +100,9 @@ uint64_t hashTable::hash(imgBlock data) {
 
 void hashTable::insert(imgBlock data) {
 	int bucketIdx = this->hash(data);
+	mu.lock();
 	this->list[bucketIdx].pushBack(data);
+	mu.unlock();
 }
 
 imgBlock hashTable::search(imgBlock data) {

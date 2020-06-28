@@ -1,6 +1,7 @@
 #ifndef HASHTABLE_H
 #define HASHTABLE_H
 #include"singlyLinkedList.h"
+extern std::mutex mu;
 class hashTable {
 private:
 	singlyLinkedList* list;

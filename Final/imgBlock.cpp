@@ -25,22 +25,22 @@ void imgBlock::computeKeyMat() {
 
     cv::cuda::cvtColor(mSource, mGrayscale, cv::COLOR_RGB2GRAY, CV_8UC1);          //RGB -> Gray
 
-    cv::Ptr<cv::cuda::Filter> gaussianFilter = cv::cuda::createGaussianFilter(mEdgeEnhance.type(), mGaussBlur.type(), cv::Size(3, 3), 5, 5);
+    cv::Ptr<cv::cuda::Filter> gaussianFilter = cv::cuda::createGaussianFilter(mGrayscale.type(), mGaussBlur.type(), cv::Size(3, 3), 5, 5);
     gaussianFilter->apply(mGrayscale, mGaussBlur);     //Gaussin filter
     
     cv::cuda::resize(mGaussBlur, mResize250, cv::Size(250, 250));             //Resize
 
     cv::cuda::GpuMat cannyFrame;
-    cv::Ptr<cv::cuda::CannyEdgeDetector> canny = cv::cuda::createCannyEdgeDetector(50, 100);
+    cv::Ptr<cv::cuda::CannyEdgeDetector> canny = cv::cuda::createCannyEdgeDetector(10, 50);
     canny->detect(mResize250, cannyFrame);                            //Edge detection
     cv::cuda::addWeighted(mResize250, 0.7, cannyFrame, 0.3, 0, mEdgeEnhance);
-
+   
     gaussianFilter->apply(mEdgeEnhance, mGaussBlur);     //Gaussin filter
     cv::cuda::resize(mGaussBlur, mResize50, cv::Size(50, 50));               //Resize
-    mResize50.download(this->bfThersholdFrame);
+    mGaussBlur.download(this->bfThersholdFrame);
 
     mResize50.download(this->keyMat);
-    cv::threshold(this->keyMat, this->keyMat, 128, 255, cv::THRESH_OTSU);     //Binarization, OTSU algo.
+    cv::threshold(this->keyMat, this->keyMat, 0, 255, cv::THRESH_OTSU);     //Binarization, OTSU algo.
 }
 
 cv::Mat imgBlock::getKeyMat() {
@@ -88,10 +88,12 @@ bool imgBlock::operator==(const imgBlock& block) {
 }
 
 double imgBlock::computeMSE(cv::Mat image1, cv::Mat image2) {
-    cv::Mat difference;
-    absdiff(image1, image2, difference);
-    difference = difference.mul(difference);
-    cv::Scalar s = sum(difference);
+    cv::cuda::GpuMat mImg1(image1);
+    cv::cuda::GpuMat mImg2(image2);
+    cv::cuda::GpuMat mDiff, mDiff_sqr;
+    cv::cuda::absdiff(mImg1, mImg2, mDiff);
+    cv::cuda::sqr(mDiff, mDiff_sqr);
+    cv::Scalar s = cv::cuda::sum(mDiff_sqr);
     double sse = s.val[0];
     return sse / double(image1.total());
 }
