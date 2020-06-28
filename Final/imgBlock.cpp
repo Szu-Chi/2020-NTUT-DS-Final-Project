@@ -138,6 +138,7 @@ void imgBlock::save(std::string bucketSlot, std::fstream& file) {
     for (int i = 1; i < this->time.size();) {
         if (this->time[i - 1].overlap(this->time[i])) {
             this->time[i - 1] += this->time[i];
+            this->time.erase(this->time.begin() + i);
         }
         else {
             i++;

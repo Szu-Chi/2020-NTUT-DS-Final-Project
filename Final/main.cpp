@@ -9,7 +9,7 @@
 #include"hashTable.h"
 #include<thread>
 #include<mutex>
-
+#include<Windows.h>
 using namespace cv;
 using namespace std;
 std::mutex mu;
@@ -59,21 +59,35 @@ void frameProc(queue<imgBlock>& imgBlockQueue, hashTable& hashTab) {
 
 int main(int argc, char* argv[]) {
 	//User
-	string videoFileName = "DSclass_1";
+	queue<int> a;
+	a.push(0);
+	a.pop();
+	int& b = a.front();
+	return 0;
+	string videoFileName = "DSclass";
 	Mat img= imread("./inputImg/357-0.bmp");
 	if (img.empty()) {
 		cout << "Input image isn't existing. Please check it." << endl;
 	}
 	else {
+		//
+		LARGE_INTEGER freq;
+		LARGE_INTEGER beginTime;
+		LARGE_INTEGER endTime;
+		//
 		imgBlock imgB(img, timeSeg(-1, -1));
 		imgB.computeKeyMat();
 		string videoExtension = "mp4";
 		fstream file;
-		file.open("./videoHash/" + videoFileName + ".hf", ios::in);
+		file.open("./videoHash/" + videoFileName + ".ht", ios::in);
 		if (file) {
 			hashTable hashTab(file);
 			imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+			QueryPerformanceFrequency(&freq);
+			QueryPerformanceCounter(&beginTime);
 			imgBlock res = hashTab.search(imgB);
+			QueryPerformanceCounter(&endTime);
+			cout << "Search time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) * 1000 / freq.QuadPart << " ms" << endl;
 			cout << "[Search Result]" << endl;
 			if (res == null) {
 				cout << "Fail! Based on the input image, it's unable to find the corresponding time segment." << endl;
@@ -82,14 +96,14 @@ int main(int argc, char* argv[]) {
 				res.printTime();
 			}
 		}
-		else {
-			std::cout << "Hash table of the video isn't existing." << std::endl;
+		else {			
 			VideoCapture cap(videoFileName + "." + videoExtension);
+			std::cout << "Hash table of the video isn't existing." << std::endl;
 			if (!cap.isOpened()) {
 				cout << "[Error] There are no video file name called " << videoFileName << "." << endl;
 			}
 			else {
-				std::cout << "Hash table constructing.." << std::endl;
+				std::cout << "Hash table building..." << std::endl;
 				queue<imgBlock> imgBlockQueue;
 				double nFrame = cap.get(CV_CAP_PROP_FRAME_COUNT);
 				hashTable hashTab(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
@@ -103,8 +117,13 @@ int main(int argc, char* argv[]) {
 					frameProcThreads[i].join();
 				}
 				hashTab.save(videoFileName);
+				std::cout << "Build completed." << std::endl;
 				imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+				QueryPerformanceFrequency(&freq);
+				QueryPerformanceCounter(&beginTime);
 				imgBlock res = hashTab.search(imgB);
+				QueryPerformanceCounter(&endTime);
+				cout << "Search time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) * 1000 / freq.QuadPart << " ms" << endl;
 				cout << "[Search Result]" << endl;
 				if (res == null) {
 					cout << "Fail! Based on the input image, it's unable to find the corresponding time segment." << endl;

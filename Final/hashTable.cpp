@@ -118,7 +118,7 @@ int hashTable::bucketSize(int idx) {
 
 void hashTable::save(std::string fileName) {
 	std::fstream file;
-	file.open("./videoHash/"+fileName+".hf", std::ios::out);
+	file.open("./videoHash/"+fileName+".ht", std::ios::out);
 	if (!file) {
 		std::cout << "[Error]" << std::endl;
 	}

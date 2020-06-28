@@ -1,5 +1,5 @@
 #include"singlyLinkedList.h"
-bool isSimilar(imgBlock imgB1, imgBlock imgB2, double threshold = 10) {
+bool isSimilar(imgBlock imgB1, imgBlock imgB2, double threshold = 40) {
 	double mse = imgBlock::computeMSE(imgB1.getKeyMat(), imgB2.getKeyMat());
 	return mse < threshold;
 }
