@@ -14,26 +14,24 @@ using namespace cv;
 using namespace std;
 std::mutex mu;
 bool finish = false;
-
+const auto processor_count = std::thread::hardware_concurrency();
 void readFrame(queue<imgBlock>& imgBlockQueue, VideoCapture& cap) {
 	Mat currFrame;
-	double fps = cap.get(CV_CAP_PROP_FPS);
+	double fps = cap.get(CAP_PROP_FPS);
 	int num = 0;
 	do {
 		if (mu.try_lock()) {
-			if (imgBlockQueue.size() < 8) {
+			if (imgBlockQueue.size() < processor_count*2) {
 				cap >> currFrame;
+				if (currFrame.empty()) {
+					mu.unlock();
+					break;
+				}
 				imgBlock block(currFrame, timeSeg(num / fps, (num + 1) / fps));
 				num++;
 				imgBlockQueue.push(block);
-				mu.unlock();
-				if (currFrame.empty()) {
-					break;
-				}
 			}
-			else {
-				mu.unlock();
-			}
+			mu.unlock();
 		}
 	} while (!currFrame.empty());
 	finish = true;
@@ -105,11 +103,11 @@ int main(int argc, char* argv[]) {
 			else {
 				std::cout << "Hash table building..." << std::endl;
 				queue<imgBlock> imgBlockQueue;
-				double nFrame = cap.get(CV_CAP_PROP_FRAME_COUNT);
+				double nFrame = cap.get(CAP_PROP_FRAME_COUNT);
 				hashTable hashTab(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
 				thread reader{ readFrame, ref(imgBlockQueue), ref(cap) };
 				vector<thread> frameProcThreads;
-				for (int i = 0; i < 5; i++) {
+				for (int i = 0; i < processor_count; i++) {
 					frameProcThreads.push_back(thread{ frameProc, ref(imgBlockQueue), ref(hashTab) });
 				}
 				reader.join();

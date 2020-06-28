@@ -16,17 +16,31 @@ imgBlock::imgBlock(cv::Mat keyMat,std::vector<timeSeg> t) {
 imgBlock::~imgBlock() {
 
 }
-
 void imgBlock::computeKeyMat() {
-    cv::cvtColor(this->frame, this->keyMat, CV_RGB2GRAY, CV_8UC1);          //RGB -> Gray
-    cv::resize(this->keyMat, this->keyMat, cv::Size(250, 250));             //Resize
-    cv::Mat cannyFrame;
-    cv::Canny(this->keyMat, cannyFrame, 10, 50);                            //Edge detection
-    cv::addWeighted(this->keyMat, 0.7, cannyFrame, 0.3, 0, this->keyMat);
-    cv::GaussianBlur(this->keyMat, this->keyMat, cv::Size(3, 3), 5, 5);     //Gaussin filter
-    keyMat.copyTo(bfThersholdFrame);
-    cv::resize(this->keyMat, this->keyMat, cv::Size(50, 50));               //Resize
-    cv::threshold(this->keyMat, this->keyMat, 0, 255, cv::THRESH_OTSU);     //Binarization, OTSU algo.
+    if (this->frame.empty()) {
+        return;
+    }
+    cv::cuda::GpuMat mSource(this->frame);
+    cv::cuda::GpuMat mGrayscale, mResize250, mResize50, mEdgeEnhance, mGaussBlur;
+
+    cv::cuda::cvtColor(mSource, mGrayscale, cv::COLOR_RGB2GRAY, CV_8UC1);          //RGB -> Gray
+
+    cv::Ptr<cv::cuda::Filter> gaussianFilter = cv::cuda::createGaussianFilter(mEdgeEnhance.type(), mGaussBlur.type(), cv::Size(3, 3), 5, 5);
+    gaussianFilter->apply(mGrayscale, mGaussBlur);     //Gaussin filter
+    
+    cv::cuda::resize(mGaussBlur, mResize250, cv::Size(250, 250));             //Resize
+
+    cv::cuda::GpuMat cannyFrame;
+    cv::Ptr<cv::cuda::CannyEdgeDetector> canny = cv::cuda::createCannyEdgeDetector(50, 100);
+    canny->detect(mResize250, cannyFrame);                            //Edge detection
+    cv::cuda::addWeighted(mResize250, 0.7, cannyFrame, 0.3, 0, mEdgeEnhance);
+
+    gaussianFilter->apply(mEdgeEnhance, mGaussBlur);     //Gaussin filter
+    cv::cuda::resize(mGaussBlur, mResize50, cv::Size(50, 50));               //Resize
+    mResize50.download(this->bfThersholdFrame);
+
+    mResize50.download(this->keyMat);
+    cv::threshold(this->keyMat, this->keyMat, 128, 255, cv::THRESH_BINARY);     //Binarization, OTSU algo.
 }
 
 cv::Mat imgBlock::getKeyMat() {
