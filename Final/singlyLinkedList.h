@@ -8,10 +8,10 @@ private:
 public:
 	singlyLinkedList ();
 	~singlyLinkedList ();
-	void pushBack(imgBlock* data);
-	imgBlock* search(imgBlock* data);
+	void pushBack(imgBlock data);
+	imgBlock search(imgBlock data);
 	int listSize();
+	void save(int i, std::fstream& file);
 };
-
 #endif // !SINGLYLINKEDLIST_H
 
