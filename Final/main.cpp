@@ -56,36 +56,48 @@ void frameProc(queue<imgBlock>& imgBlockQueue, hashTable& hashTab) {
 }
 
 int main(int argc, char* argv[]) {
-	//User
-	queue<int> a;
-	a.push(0);
-	a.pop();
-	int& b = a.front();
-	return 0;
 	string videoFileName = "DSclass";
-	Mat img= imread("./inputImg/357-0.bmp");
+	string imagePath = "./inputImg/2445-0.bmp";
+	//User
+	cout << "Please enter video file name: ";
+	cin >> videoFileName;
+	cout << "Please enter image (absolute path): ";
+	cin >> imagePath;
+	cout << '\n';
+
+	Mat img = imread(imagePath);
+
 	if (img.empty()) {
-		cout << "Input image isn't existing. Please check it." << endl;
+		size_t pos = imagePath.find_last_of("/");
+		cout << "[Fail] Input image isn't existing. Please check it." << endl;
+		cout << "Input image file: " << imagePath.substr(pos + 1, imagePath.size()) << endl;
+		cout << "Input path: " << imagePath.substr(0, pos + 1) << endl;
 	}
 	else {
-		//
+		
 		LARGE_INTEGER freq;
 		LARGE_INTEGER beginTime;
 		LARGE_INTEGER endTime;
-		//
-		imgBlock imgB(img, timeSeg(-1, -1));
-		imgB.computeKeyMat();
+
 		string videoExtension = "mp4";
 		fstream file;
 		file.open("./videoHash/" + videoFileName + ".ht", ios::in);
+
 		if (file) {
 			hashTable hashTab(file);
-			imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+			
+			std::cout << "Searching..." << std::endl;
 			QueryPerformanceFrequency(&freq);
 			QueryPerformanceCounter(&beginTime);
+			//---tic---
+			imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+			imgBlock imgB(img, timeSeg(-1, -1));
+			imgB.computeKeyMat();
 			imgBlock res = hashTab.search(imgB);
+			//---toc---
 			QueryPerformanceCounter(&endTime);
-			cout << "Search time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) * 1000 / freq.QuadPart << " ms" << endl;
+			cout << "Search completed." << std::endl;
+			cout << "Search time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) / freq.QuadPart << "s\n" << endl;
 			cout << "[Search Result]" << endl;
 			if (res == null) {
 				cout << "Fail! Based on the input image, it's unable to find the corresponding time segment." << endl;
@@ -96,12 +108,16 @@ int main(int argc, char* argv[]) {
 		}
 		else {			
 			VideoCapture cap(videoFileName + "." + videoExtension);
-			std::cout << "Hash table of the video isn't existing." << std::endl;
+			std::cout << "\nHash table file of the video isn't existing." << std::endl;
 			if (!cap.isOpened()) {
-				cout << "[Error] There are no video file name called " << videoFileName << "." << endl;
+				cout << "[Fail] There are no video file name called " << videoFileName << "." << endl;
 			}
 			else {
 				std::cout << "Hash table building..." << std::endl;
+
+				QueryPerformanceFrequency(&freq);
+				QueryPerformanceCounter(&beginTime);
+				//---tic---
 				queue<imgBlock> imgBlockQueue;
 				double nFrame = cap.get(CAP_PROP_FRAME_COUNT);
 				hashTable hashTab(static_cast<int>(pow(2, ceil(log2(ceil(nFrame / 20))))));
@@ -114,17 +130,28 @@ int main(int argc, char* argv[]) {
 				for (int i = 0; i < frameProcThreads.size(); i++) {
 					frameProcThreads[i].join();
 				}
-				hashTab.save(videoFileName);
-				std::cout << "Build completed." << std::endl;
-				imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+  				hashTab.save(videoFileName);
+				//---toc---
+				QueryPerformanceCounter(&endTime);
+				cout << "Build completed." << std::endl;
+				cout << "Build time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) / freq.QuadPart << " s\n" << endl;
+
+				std::cout << "Searching..." << std::endl;
 				QueryPerformanceFrequency(&freq);
 				QueryPerformanceCounter(&beginTime);
+				//---tic---
+				imgBlock null = imgBlock(cv::Mat(1, 1, 0), timeSeg(-1, -1));
+				imgBlock imgB(img, timeSeg(-1, -1));
+				imgB.computeKeyMat();
 				imgBlock res = hashTab.search(imgB);
+				//---toc---
 				QueryPerformanceCounter(&endTime);
-				cout << "Search time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) * 1000 / freq.QuadPart << " ms" << endl;
+				cout << "Search completed." << std::endl;
+				cout << "Search time: " << static_cast<double>((endTime.QuadPart - beginTime.QuadPart)) / freq.QuadPart << " s\n" << endl;
+				
 				cout << "[Search Result]" << endl;
 				if (res == null) {
-					cout << "Fail! Based on the input image, it's unable to find the corresponding time segment." << endl;
+					cout << "Sorry! Based on the input image, it's unable to find the corresponding time segment." << endl;
 				}
 				else {
 					res.printTime();
@@ -132,6 +159,7 @@ int main(int argc, char* argv[]) {
 			}
 		}
 	}
+	cout << '\n';
 	system("pause");
 	return 0;
 }

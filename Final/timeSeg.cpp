@@ -9,7 +9,7 @@ timeSeg::~timeSeg(){
 }
 
 bool timeSeg::overlap(timeSeg t){
-    return ((this->timeStr > t.timeEnd + 5) || (this->timeEnd < t.timeStr - 5)) ? false : true;
+    return ((this->timeStr > t.timeEnd + 10) || (this->timeEnd < t.timeStr - 10)) ? false : true;
 }
 
 timeSeg timeSeg::operator+(const timeSeg &t){

@@ -40,7 +40,7 @@ void imgBlock::computeKeyMat() {
     mResize50.download(this->bfThersholdFrame);
 
     mResize50.download(this->keyMat);
-    cv::threshold(this->keyMat, this->keyMat, 128, 255, cv::THRESH_BINARY);     //Binarization, OTSU algo.
+    cv::threshold(this->keyMat, this->keyMat, 128, 255, cv::THRESH_OTSU);     //Binarization, OTSU algo.
 }
 
 cv::Mat imgBlock::getKeyMat() {
