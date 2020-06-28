@@ -25,16 +25,18 @@ void imgBlock::computeKeyMat() {
 
     cv::cuda::cvtColor(mSource, mGrayscale, cv::COLOR_RGB2GRAY, CV_8UC1);          //RGB -> Gray
 
-    cv::Ptr<cv::cuda::Filter> gaussianFilter = cv::cuda::createGaussianFilter(mGrayscale.type(), mGaussBlur.type(), cv::Size(3, 3), 5, 5);
+    cv::Ptr<cv::cuda::Filter> gaussianFilter = cv::cuda::createGaussianFilter(mGrayscale.type(), mGaussBlur.type(), cv::Size(9, 9), 10, 10);
     gaussianFilter->apply(mGrayscale, mGaussBlur);     //Gaussin filter
     
     cv::cuda::resize(mGaussBlur, mResize250, cv::Size(250, 250));             //Resize
 
-    cv::cuda::GpuMat cannyFrame;
+    gaussianFilter->apply(mResize250, mGaussBlur);     //Gaussin filter
+    cv::cuda::GpuMat mCanny;
+    cv::Mat cannyFrame;
     cv::Ptr<cv::cuda::CannyEdgeDetector> canny = cv::cuda::createCannyEdgeDetector(10, 50);
-    canny->detect(mResize250, cannyFrame);                            //Edge detection
-    cv::cuda::addWeighted(mResize250, 0.7, cannyFrame, 0.3, 0, mEdgeEnhance);
-   
+    canny->detect(mGaussBlur, mCanny);                            //Edge detection
+    cv::cuda::addWeighted(mResize250, 0.7, mCanny, 0.3, 0, mEdgeEnhance);
+    mCanny.download(cannyFrame);
     gaussianFilter->apply(mEdgeEnhance, mGaussBlur);     //Gaussin filter
     cv::cuda::resize(mGaussBlur, mResize50, cv::Size(50, 50));               //Resize
     mGaussBlur.download(this->bfThersholdFrame);
